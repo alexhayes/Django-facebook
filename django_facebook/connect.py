@@ -245,6 +245,9 @@ def _register_user(request, facebook, profile_callback=None,
         # this happens when users click multiple times, the first request registers
         # the second one raises an error
         raise facebook_exceptions.AlreadyRegistered(e)
+    except Exception, e:
+        logger.warn("Caught exception: %s", e, exc_info=e)
+        raise
 
     signals.facebook_user_registered.send(sender=get_user_model(),
                                           user=new_user, facebook_data=facebook_data, request=request)
@@ -358,7 +361,8 @@ def _update_user(user, facebook, overwrite=True):
         profile.save()
 
     signals.facebook_post_update.send(sender=get_user_model(),
-                                      user=user, profile=profile, facebook_data=facebook_data)
+                                      user=user, profile=profile, facebook_data=facebook_data,
+                                      facebook=facebook)
 
     return user
 
